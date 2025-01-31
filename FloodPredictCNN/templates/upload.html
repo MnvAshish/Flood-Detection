@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flood Detection Image Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            background-color: #0a1a2b;
+            color: #fff;
+            height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .slideshow-container {
+    position: fixed; /* Ensures it acts as a background */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    overflow: hidden;
+}
+
+.slideshow-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75); /* Adjust the opacity (0.5 for 50% transparency) */
+    z-index: 1; /* Ensure it sits above the images but below the content */
+}
+
+.slideshow-container img {
+    position: absolute; /* Position images in the same place */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    opacity: 0; /* Initially invisible */
+    transition: opacity 1s ease-in-out;
+}
+
+.slideshow-container img.active {
+    opacity: 1; /* Only the active image is visible */
+}
+
+
+        h2 {
+            font-size: 42px;
+            font-weight: 700;
+            background: linear-gradient(to right, #1e90ff, #00bfff);
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: 3px 3px 20px rgba(30, 144, 255, 0.8);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .upload-container {
+            background-color: rgba(0, 0, 50, 0.8);
+            backdrop-filter: blur(5px);
+            padding: 20px 30px;
+            border-radius: 20px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 400px;
+            margin: 40px auto;
+            transition: opacity 1s ease-in-out;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .custom-file-upload, button {
+            background-color: #0077cc;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 12px;
+            margin-top: 15px;
+            width: 100%;
+            max-width: 220px;
+            transition: background-color 0.3s, transform 0.3s;
+            font-weight: 700;
+        }
+
+        .custom-file-upload:hover, button:hover {
+            background-color: #005fa3;
+            transform: translateY(-3px);
+        }
+
+        .loading-bar-container {
+            width: 100%;
+            height: 5px;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            margin-top: 30px;
+            display: none;
+        }
+
+        .loading-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #34d399, #00d0ff);
+            width: 0%;
+            border-radius: 10px;
+        }
+
+        .result-container {
+            display: none;
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+
+        .result-container h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .result-container p {
+            font-size: 18px;
+        }
+
+         #about-section {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: opacity 1s ease-in-out;
+    padding: 50px;
+    background-color: rgba(0, 0, 50, 0.8);
+    border-radius: 15px;
+    max-width: 800px;
+    margin: 40px auto 600px auto;
+    text-align: center; /* Center-align text */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+}
+
+#about-section h2 {
+    margin-bottom: 20px; /* Add spacing between the title and the paragraph */
+}
+
+#about-section p {
+    margin: 0; /* Remove any extra space around the paragraph */
+}
+
+
+        #selected-image {
+            margin-top: 15px;
+            max-width: 100%;
+            max-height: 300px;
+            display: none;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        }
+        .did-you-know {
+        margin-top: 20px;
+        font-size: 14px;
+        font-weight: 500;
+        text-align: center;
+        opacity: 1;
+        transition: opacity 1s ease-in-out;  /* Smooth fade effect */
+    }
+
+    /* Added class for fade-out effect */
+    .fade {
+        opacity: 0;
+        transition: opacity 1s ease-in-out;
+    }
+        body {
+    padding-bottom: 100px;
+    }
+    </style>
+</head>
+<body>
+    <div class="slideshow-container" id="slideshow">
+        <!-- Slideshow images -->
+        <img src="static/images/istockphoto-1327617934-612x612.jpg" class="active" alt="Flood Image 1">
+        <img src="static/images/vjkvg-donars 3.jpg" alt="Flood Image 2">
+        <img src="static/images/germanyfloods_1280x720.jpg" alt="Flood Image 3">
+        <img src="static/images/How_Does_a_Flood_Happen_Featured.jpg" alt="Flood Image 4">
+        <img src="static/images/india_flood.jpg" alt="Flood Image 5">
+
+    </div>
+
+    <div class="upload-container" id="upload-container">
+        <h2>FLOOD DETECTION</h2>
+        <label for="imageUpload" class="custom-file-upload">Choose a file</label>
+        <input type="file" id="imageUpload" accept="image/*" onchange="previewImage(event)">
+        <img id="selected-image" alt="Selected Preview">
+        <button onclick="uploadImage()">Detect</button>
+
+        <div class="loading-bar-container" id="loading-bar-container">
+            <div class="loading-bar" id="loading-bar"></div>
+        </div>
+
+        <div class="result-container" id="result-container">
+            <h3>Detection Result:</h3>
+            <p id="flood-status"></p>
+        </div>
+
+        <div class="did-you-know" id="did-you-know">
+            Did you know? Floods are the most common natural disaster worldwide, causing billions of dollars in damage each year.
+        </div>
+    </div>
+
+    <div id="about-section">
+        <h2>About the Flood Detection Model</h2>
+        <p>This model uses advanced machine learning algorithms to detect the occurrence of floods based on satellite images. It processes the visual data and outputs a prediction on whether the area is flooded or not. The model's accuracy can be continuously improved with more data and training.</p>
+    </div>
+
+    <script>
+        // Slideshow script (unchanged)
+        const slideshowImages = document.querySelectorAll('#slideshow img');
+        let currentIndex = 0;
+
+        function changeBackgroundImage() {
+            slideshowImages[currentIndex].classList.remove('active');
+            currentIndex = (currentIndex + 1) % slideshowImages.length;
+            slideshowImages[currentIndex].classList.add('active');
+        }
+
+        setInterval(changeBackgroundImage, 5000);
+
+        // Scroll behavior script (unchanged)
+        window.addEventListener('scroll', function () {
+            const uploadContainer = document.getElementById('upload-container');
+            const aboutSection = document.getElementById('about-section');
+
+            if (window.scrollY > 50) {
+                uploadContainer.style.opacity = '0';
+                aboutSection.style.opacity = '1';
+            } else {
+                uploadContainer.style.opacity = '1';
+                aboutSection.style.opacity = '0';
+            }
+        });
+
+        // Image preview function (unchanged)
+        function previewImage(event) {
+            const fileInput = event.target;
+            const file = fileInput.files[0];
+            const selectedImage = document.getElementById('selected-image');
+
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function (e) {
+                    selectedImage.src = e.target.result;
+                    selectedImage.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            } else {
+                selectedImage.style.display = 'none';
+            }
+        }
+
+        // Upload image and get prediction
+        function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            const loadingBarContainer = document.getElementById('loading-bar-container');
+            const loadingBar = document.getElementById('loading-bar');
+            const resultContainer = document.getElementById('result-container');
+            const floodStatusElement = document.getElementById('flood-status');
+
+            if (!file) {
+                alert("Please select an image file to upload.");
+                return;
+            }
+
+            // Reset UI elements
+            resultContainer.style.display = 'none';
+            loadingBarContainer.style.display = 'block';
+            loadingBar.style.width = '0%';
+
+            // Simulate a loading bar
+            let progress = 0;
+            const progressInterval = setInterval(() => {
+                progress += 10;
+                loadingBar.style.width = '${progress}%' ;
+                if (progress >= 100) clearInterval(progressInterval);
+            }, 300);
+
+            // Send image to backend
+            const formData = new FormData();
+            formData.append('file', file);
+
+            fetch('/predict', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                clearInterval(progressInterval);
+                loadingBar.style.width = '100%';
+                loadingBarContainer.style.display = 'none';
+
+                // Display the result
+                resultContainer.style.display = 'block';
+                floodStatusElement.innerText = `Flood Status: ${data.result}`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("An error occurred while processing your request. Please try again.");
+                loadingBarContainer.style.display = 'none';
+            });
+        }
+        // Array of facts
+    const facts = [
+        "Did you know? Floods are the most common natural disaster worldwide, causing billions of dollars in damage each year.",
+        "Did you know? Over 2 billion people are affected by floods every year.",
+        "Did you know? Flooding causes more than 6,000 deaths annually worldwide.",
+        "Did you know? Floods can occur in any region of the world, regardless of geography.",
+        "Did you know? In 2017, floods caused over $60 billion in damages globally."
+    ];
+
+    const factElement = document.getElementById('did-you-know');
+    let currentFactIndex = 0;
+
+    // Function to update the fact with fade effect
+    function updateFact() {
+        // Add fade class to make the current fact fade out
+        factElement.classList.add('fade');
+
+        // Wait for the fade-out animation to complete before changing the text
+        setTimeout(() => {
+            // Update the fact text
+            factElement.textContent = facts[currentFactIndex];
+            currentFactIndex = (currentFactIndex + 1) % facts.length; // Cycle through facts
+
+            // Remove fade class to trigger fade-in animation
+            factElement.classList.remove('fade');
+        }, 1000); // 1000ms = 1 second for fade-out duration
+    }
+
+    // Set an interval to change the fact every 5 seconds with fade effect
+    setInterval(updateFact, 5000);
+
+    // Set the initial fact immediately
+    updateFact();
+
+    </script>
+</body>
+</html>
