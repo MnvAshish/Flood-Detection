@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: scenesolver
+    env: python
+    runtime: python-3.10
+    buildCommand: |
+      pip install --upgrade pip
+      pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+    plan: free
+    autoDeploy: true
+    region: oregon  # or 'frankfurt' if closer
