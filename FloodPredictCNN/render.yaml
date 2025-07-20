@@ -12,4 +12,3 @@ services:
         value: 3.10.12
     plan: free
     autoDeploy: true
-    region: Singapore (Southeast Asia) # or 'frankfurt' if closer
