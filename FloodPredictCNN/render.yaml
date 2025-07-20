@@ -12,4 +12,4 @@ services:
         value: 3.10.12
     plan: free
     autoDeploy: true
-    region: oregon  # or 'frankfurt' if closer
+    region: Singapore (Southeast Asia) # or 'frankfurt' if closer
