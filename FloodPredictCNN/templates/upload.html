@@ -313,6 +313,7 @@
                 // Display the result
                 resultContainer.style.display = 'block';
                 floodStatusElement.innerText = `Flood Status: ${data.result}`;
+                console.log("Response from server:", data);
             })
             .catch(error => {
                 console.error('Error:', error);
